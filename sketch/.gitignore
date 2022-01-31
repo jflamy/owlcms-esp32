@@ -32,3 +32,5 @@ secrets.h
 *.exe
 *.out
 *.app
+/secrets_ada.h
+/secrets_stackhero.h

@@ -6,19 +6,28 @@
 // Conversely, it subscribes to requests to warn the last referee when a decision is pending.
 // Derived from https://randomnerdtutorials.com/esp32-mqtt-publish-subscribe-arduino-ide
 
+#ifdef TLS
+#include <WiFiClientSecure.h>
+#include "certificates.h"
+#else
 #include <WiFi.h>
+#endif
+
 #include "Tone32.hpp"
 #include "PubSubClient.h"
 
 // ====== START CONFIG SECTION ======================================================
 
-// create your own secrets.h file (and do not commit to git!)
 #include "secrets.h"
-//const char* wifiSSID = "Wokwi-GUEST";
-//const char* wifiPassword = "";
-//const char* mqttServer = "test.mosquitto.org";
-//const char* mqttUserName= "";
-//const char* mqttPassword = "";
+// create your own secrets.h file (use secrets_example.h as starting point)
+// in Wokwi, uses the down arrow to the right of the Library Manager menu
+
+#ifdef TLS
+const int mqttPort = 8883;
+#else
+const int mqttPort = 1883;
+#endif
+
 
 // owlcms parameters (used if no dispwitches are present or are switched off)
 const int referee = 1;
@@ -38,7 +47,7 @@ const int buzzerPin = 21;
 const int inGoodPin = 25;
 const int inBadPin = 33;
 
-// not used in this design
+// kept if someone wants to add dip switches to control on-site config.
 // dip switches for refs 1 2 and 3 respectively
 int refPins[] = {26, 27, 14};
 // dip switches 7 and 8 for platform selection
@@ -49,18 +58,21 @@ int fopPins[] = {13, 12};
 
 // ====== END CONFIG SECTION ======================================================
 
-
 #define ELEMENTCOUNT(x)  (sizeof(x) / sizeof(x[0]))
 
+#ifdef TLS
+WiFiClientSecure wifiClient;
+#else
+WiFiClient wifiClient;
+#endif
+PubSubClient mqttClient;
+
+String address;
+boolean firstConnection = true;
 String stMac;
 char mac[50];
 char clientId[50];
 char fop[20];
-
-WiFiClient espClient;
-PubSubClient client(espClient);
-String address;
-boolean firstConnection = true;
 
 int refNumber = 0;
 int fopNumber = -1;
@@ -72,13 +84,17 @@ Tone32 tone32(buzzerPin, 0);
 int beepingIterations = 0;
 
 void setup() {
+#ifdef TLS
+  wifiClient.setCACert(rootCABuff);
+  wifiClient.setInsecure();
+#endif
+  mqttClient.setClient(wifiClient);
   Serial.begin(115200);
   randomSeed(analogRead(0));
 
-  setupPins();
   delay(10);
 
-  Serial.print("Connecting to WiFi");
+  Serial.print("Connecting to WiFi ");
   Serial.print(wifiSSID);
   wifiConnect();
   address = WiFi.macAddress();
@@ -91,11 +107,41 @@ void setup() {
 
   Serial.print("MQTT server: ");
   Serial.println(mqttServer);
-  //espClient.setInsecure();
-  client.setServer(mqttServer, 1883);
-  client.setCallback(callback);
+  //wifiClient.setInsecure();
+  mqttClient.setServer(mqttServer, mqttPort);
+  mqttClient.setCallback(callback);
 
+  setupPins();
   readDipSwitches();
+}
+
+void loop() {
+  delay(5);
+  if (!mqttClient.connected()) {
+    mqttReconnect();
+  }
+
+  // no dip switches in this design, no need to check that they have changed
+  // readDipSwitches();
+
+  mqttClient.loop();
+  buttonLoop();
+  if (beepingIterations > 0 && !tone32.isPlaying()) {
+    Serial.println(beepingIterations);
+    if (((beepingIterations % 2) == 0)) {
+      Serial.print(millis());
+      Serial.println(" beep on");
+      tone32.playNote(cfgBeepNote, cfgBeepOctave, cfgBeepMilliseconds);
+    } else {
+      Serial.print(millis());
+      Serial.println(" beep off");
+      tone32.silence(cfgSilenceMilliseconds);
+    }
+  }
+  tone32.update(); // turn off sound if duration reached.
+  if (!tone32.isPlaying()) {
+    beepingIterations--;
+  }
 }
 
 void wifiConnect() {
@@ -109,7 +155,7 @@ void wifiConnect() {
 }
 
 void mqttReconnect() {
-  while (!client.connected()) {
+  while (!mqttClient.connected()) {
     //long r = random(1000);
     //sprintf(clientId, "clientId-%ld", r);
 
@@ -117,7 +163,7 @@ void mqttReconnect() {
       Serial.print(address);
       Serial.print(" connecting to MQTT server...");
     }
-    if (client.connect(clientId, mqttUserName, mqttPassword)) {
+    if (mqttClient.connect(clientId, mqttUserName, mqttPassword)) {
       if (firstConnection) {
         //Serial.print(clientId);
         Serial.println(" connected");
@@ -126,13 +172,13 @@ void mqttReconnect() {
       char requestTopic[50] = "owlcms/decisionRequest/";
       strcat(requestTopic, fop);
       strcat(requestTopic, "/+");
-      client.subscribe(requestTopic);
+      mqttClient.subscribe(requestTopic);
       char ledTopic[50] = "owlcms/led/";
       strcat(ledTopic, fop);
-      client.subscribe(ledTopic);
+      mqttClient.subscribe(ledTopic);
     } else {
       Serial.print("MQTT connection failed, rc=");
-      Serial.print(client.state());
+      Serial.print(mqttClient.state());
       Serial.println(" try again in 1 second");
       delay(1000);
     }
@@ -208,7 +254,7 @@ void readDipSwitches() {
     configChanged = true;
   }
   if (configChanged) {
-    client.disconnect();
+    mqttClient.disconnect();
     firstConnection = true; // not a reconnect on failure, show message
     mqttReconnect();
   }
@@ -250,7 +296,7 @@ void sendDecision(const char* decision) {
   strcat(message, clientId);
   strcat(message, " ");
   strcat(message, decision);
-  client.publish(topic, message);
+  mqttClient.publish(topic, message);
   Serial.print(topic);
   Serial.print(" ");
   Serial.print(message);
@@ -295,34 +341,5 @@ void callback(char* topic, byte* message, unsigned int length) {
       beepingIterations = 0;
       tone32.stopPlaying();
     }
-  }
-}
-
-void loop() {
-  delay(5);
-  if (!client.connected()) {
-    mqttReconnect();
-  }
-
-  // no dip switches in this design, no need to check that they have changed
-  // readDipSwitches();
-
-  client.loop();
-  buttonLoop();
-  if (beepingIterations > 0 && !tone32.isPlaying()) {
-    Serial.println(beepingIterations);
-    if (((beepingIterations % 2) == 0)) {
-      Serial.print(millis());
-      Serial.println(" beep on");
-      tone32.playNote(cfgBeepNote, cfgBeepOctave, cfgBeepMilliseconds);
-    } else {
-      Serial.print(millis());
-      Serial.println(" beep off");
-      tone32.silence(cfgSilenceMilliseconds);
-    }
-  }
-  tone32.update(); // turn off sound if duration reached.
-  if (!tone32.isPlaying()) {
-    beepingIterations--;
   }
 }
