@@ -10,19 +10,15 @@ You can simulate the device on wokwi.com (see below)
 ## Simulation on wokwi.com
 1. Check out this project, or download the zip.
 2. Create a new project on wokwi.com.  Select ESP32 as the type.
-3. In the new project, to the right of the "Library Manager" item at the top of the code editor, use the down arrow to upload your files
-4. Create a secrets.h file (from the same menu) with the following content
+3. In the new project, upload the files you have checked out using the down arrow to the right of the "Library Manager" menu.
+4. Select the `secrets_template.h` file and rename it (same menu) to `secrets.h`   the following values are ok for initial testing.
 ```
-// wifi
-// Wokwi-GUEST is used by the ESP32 simulator
-const char* wifiSSID = "Wokwi-GUEST";
-const char* wifiPassword = "";
-
-// MQTT server
-// On the cloud, make sure you use a server that enforces username and password
-// StackHero on Heroku does.
 const char* mqttServer = "test.mosquitto.org";
 const char* mqttUserName= "";
 const char* mqttPassword = "";
 ```
-5. We recommend that you use a server that supports passwords. For example, create a new Heroku Application and add the StackHero MQTT server in "test" mode, which is available for free (the standard StackHero site does not have that option).
+5. We recommend that you use a server that supports passwords.  StackHero has a free test mode that is available as a Heroku add on.
+   1. create a new empty Heroku Application.  This is because only one free test application is available per account.
+   2. add the StackHero MQTT server in the "Test" pricing plan (which is free)
+   3. add a user - this will be your mqttUserName, and use the generated password as the mqttPassword
+   4. For testing, allow the "dangerous" mode without TLS.
