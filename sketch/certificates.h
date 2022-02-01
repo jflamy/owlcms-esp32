@@ -2,7 +2,7 @@
 	https://www.symantec.com/content/en/us/enterprise/verisign/roots/VeriSign-Class%203-Public-Primary-Certification-Authority-G5.pem
 */
 
-/*
+
 const char* rootCABuff = \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIIE0zCCA7ugAwIBAgIQGNrRniZ96LtKIVjNzGs7SjANBgkqhkiG9w0BAQUFADCB\n" \
@@ -32,8 +32,8 @@ const char* rootCABuff = \
 "4fQRbxC1lfznQgUy286dUV4otp6F01vvpX1FQHKOtw5rDgb7MzVIcbidJ4vEZV8N\n" \
 "hnacRHr2lVz2XTIIM6RUthg/aFzyQkqFOFSDX9HoLPKsEdao7WNq\n" \
 "-----END CERTIFICATE-----\n";
-*/
 
+/*
 // io.adafruit.com root CA
 const char* rootCABuff = \
     "-----BEGIN CERTIFICATE-----\n" \
@@ -58,3 +58,4 @@ const char* rootCABuff = \
     "YSEY1QSteDwsOoBrp+uvFRTp2InBuThs4pFsiv9kuXclVzDAGySj4dzp30d8tbQk\n" \
     "CAUw7C29C79Fv1C5qfPrmAESrciIxpg0X40KPMbp1ZWVbd4=\n" \
     "-----END CERTIFICATE-----\n";
+    */

@@ -18,7 +18,7 @@
 
 // ====== START CONFIG SECTION ======================================================
 
-#include "secrets.h"
+#include "secrets_stackhero.h"
 // create your own secrets.h file (use secrets_example.h as starting point)
 // in Wokwi, uses the down arrow to the right of the Library Manager menu
 
