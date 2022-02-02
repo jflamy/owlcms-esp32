@@ -2,7 +2,6 @@
 	https://www.symantec.com/content/en/us/enterprise/verisign/roots/VeriSign-Class%203-Public-Primary-Certification-Authority-G5.pem
 */
 
-
 const char* rootCABuff = \
 "-----BEGIN CERTIFICATE-----\n" \
 "MIIE0zCCA7ugAwIBAgIQGNrRniZ96LtKIVjNzGs7SjANBgkqhkiG9w0BAQUFADCB\n" \
