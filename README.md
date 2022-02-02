@@ -28,7 +28,7 @@ const char* mqttServer = "test.mosquitto.org";
 const char* mqttUserName= "";
 const char* mqttPassword = "";
 ```
-5. You should look at the `sketch.ino` file and change the referee number if you want to run several instances.
+5. You should look at the `sketch.ino` file and change the referee number.  Normally you will compile and load the project 3 times, for referees 1, 2 and 3.
 6. You should connect to their club (pick a monthly amount you can afford) which will give you access to `wokwigw`.  This will enable you to use your own Internet connection, and to connect to your own local MQTT server.
 
 ## Use on a real device
