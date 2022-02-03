@@ -7,7 +7,7 @@ The device uses a low-cost ESP32 device (Arduino-like) which can be bought for a
 
 You can simulate the device on wokwi.com (see below)
 
-![](https://wokwi.com/cdn-cgi/image/width=1920/https://thumbs.wokwi.com/projects/322138140212986451/thumbnail.jpg?tile&t=1643593581208)
+![](https://wokwi.com/cdn-cgi/image/width=1920/https://thumbs.wokwi.com/projects/322534543008465491/thumbnail.jpg)
 
 
 
@@ -17,33 +17,39 @@ Instructions for setting up an MQTT server and configuring owlcms be found at [t
 
 ## Simulation on wokwi.com
 
+A single device can be wired to 3 referee boxes.  Alternately, you can build a separate device for each referee (which removes the need for wiring). For this second scenario, you only keep one of the three colors (and configure the referee number in the .ino file, see below).
+
 The simulator is fast enough that you could actually use it to referee a competition - you would run the simulation in 3 different browsers, with a different referee number.
 
 1. Check out this project, or download the zip.
 2. Create a new project on wokwi.com.  Select ESP32 as the type.
 3. In the new project, upload the files you have checked out using the down arrow to the right of the "Library Manager" menu.
-4. Select the `secrets_template.h` file and rename it (same menu) to `secrets.h`   the following values are ok for initial testing.
+4. Select the `secrets_template.h` file and rename it (same menu) to `secrets.h`   the following values are ok for initial testing. 
 ```
 const char* mqttServer = "test.mosquitto.org";
 const char* mqttUserName= "";
 const char* mqttPassword = "";
 ```
-5. You should look at the `sketch.ino` file and change the referee number.  Normally you will compile and load the project 3 times, for referees 1, 2 and 3.
+5.  Check that the `#include "secrets.h"` directive is correct inside `multi.io`.
 6. You should connect to their club (pick a monthly amount you can afford) which will give you access to `wokwigw`.  This will enable you to use your own Internet connection, and to connect to your own local MQTT server.
 
 ## Use on a real device
 
 > If you actually build the device, please provide feedback.  Sound features cannot be simulated completely yet and may need tweaking.
 
-Two options:
+If you want separate devices for each referee, you need to edit the `multi.ino` file and change the referee number to 1, 2 or 3.  You will then compile a different .bin for each of the 3 referees. 
 
--  check out this project to your Arduino IDE and perform the same configuration of a secrets.h file, or
+If you want a single device for all the referees, the default referee number (0) is correct.
+
+There are two options to generating the binary file for the ESP32 module:
+
+-  check out this project to your Arduino IDE and follow the steps above to customize the `secrets.h` file, or
 
 - work on wokwi to do the configuration using the technique above. You can then use the F1 key in the code editor to compile and download an HEX file.  This will give you a working .bin which can be loaded to the ESP32 as follows (the com port would be the one where you connect the ESP32)
 
-  - install python. On windows `winget install Python`
+  - install python. On windows, start a command shell and run  `winget install Python`
 
-  - install esptool. `pip install esptool`
+  - install esptool.  From a shell, run `pip install esptool`
 
   - Flash the program `python -m esptool -p com6 -b 900000 write_flash 0x1000 myfile.bin`
 
