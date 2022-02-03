@@ -4,6 +4,7 @@
   Nick O'Leary
   http://knolleary.net
 */
+#define SIMULATION_SPEED 0.50
 
 #include "PubSubClient.h"
 #include "Arduino.h"
@@ -370,7 +371,7 @@ uint32_t PubSubClient::readPacket(uint8_t* lengthLength) {
 boolean PubSubClient::loop() {
     if (connected()) {
         unsigned long t = millis();
-        if ((t - lastInActivity > this->keepAlive*1000UL) || (t - lastOutActivity > this->keepAlive*1000UL)) {
+        if ((t - lastInActivity > SIMULATION_SPEED*this->keepAlive*1000UL) || (t - lastOutActivity > SIMULATION_SPEED*this->keepAlive*1000UL)) {
             if (pingOutstanding) {
                 this->_state = MQTT_CONNECTION_TIMEOUT;
                 _client->stop();
