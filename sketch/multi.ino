@@ -31,9 +31,9 @@ const int mqttPort = 1883;
 #include "Tone32.hpp"
 #include "PubSubClient.h"
 
-// number of beeps when referee wakeup is received (led remains on until decision)
-// set to 0 to disable sound.
-const int nbBeeps = 5;
+// number of beeps when referee wakeup is received
+// set to 0 to disable beeps.
+const int nbBeeps = 3;
 const note_t cfgBeepNote = NOTE_C;
 const int cfgBeepOctave = 4; // C4
 const int cfgBeepMilliseconds = 100;
