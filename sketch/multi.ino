@@ -31,14 +31,22 @@ const int mqttPort = 1883;
 #include "Tone32.hpp"
 #include "PubSubClient.h"
 
-// number of beeps when referee wakeup or summon is received (led remains on until decision)
+// number of beeps when referee wakeup is received (led remains on until decision)
 // set to 0 to disable sound.
 const int nbBeeps = 5;
 const note_t cfgBeepNote = NOTE_C;
 const int cfgBeepOctave = 4; // C4
 const int cfgBeepMilliseconds = 100;
 const int cfgSilenceMilliseconds = 50; // time between beeps
-const int cfgLedDuration = 3000; // led stays for this maximum time;
+const int cfgLedDuration = 1000; // led stays for this maximum time;
+
+// referee summon parameters
+const int nbSummonBeeps = 1;
+const note_t cfgSummonNote = NOTE_F;
+const int cfgSummonOctave = 5; // F5
+const int cfgSummonBeepMilliseconds = 3000;
+const int cfgSummonSilenceMilliseconds = 0;
+const int cfgSummonLedDuration = cfgSummonBeepMilliseconds;
 
 // pins for refs 1 2 and 3 (1 good, 1 bad, 2 good, etc.)
 int decisionPins[] = {14, 27, 26, 25, 33, 32};
@@ -72,6 +80,10 @@ Tone32 tones[3] = {Tone32(0, 0), Tone32(1, 0), Tone32(2, 0)};
 int beepingIterations[] = {0, 0, 0};
 int ledStartedMillis[] = {0, 0, 0};
 int ledDuration[] = {0, 0, 0};
+note_t beepNote;
+int beepOctave;
+int silenceMilliseconds;
+int beepMilliseconds;
 
 void setup() {
 #ifdef TLS
@@ -198,11 +210,11 @@ void buzzerLoop() {
   for (int j = 0; j < ELEMENTCOUNT(beepingIterations); j++) {
     if (beepingIterations[j] > 0 && !tones[j].isPlaying()) {
       if (((beepingIterations[j] % 2) == 0)) {
-        //Serial.print(millis()); Serial.println(" beep on");
-        tones[j].playNote(cfgBeepNote, cfgBeepOctave, cfgBeepMilliseconds);
+        Serial.print(millis()); Serial.println(" sound on");
+        tones[j].playNote(beepNote, beepOctave, beepMilliseconds);
       } else {
-        //Serial.print(millis()); Serial.println(" beep off");
-        tones[j].silence(cfgSilenceMilliseconds);
+        Serial.print(millis()); Serial.println(" sound off");
+        tones[j].silence(silenceMilliseconds);
       }
     }
     tones[j].update(); // turn off sound if duration reached.
@@ -258,35 +270,57 @@ void callback(char* topic, byte* message, unsigned int length) {
   int ref13Number = refString.toInt();
 
   if (stTopic.startsWith(decisionRequestTopic)) {
-    changeWarningStatus(ref13Number - 1, stMessage.startsWith("on"));
+    changeReminderStatus(ref13Number - 1, stMessage.startsWith("on"));
   } else if (stTopic.startsWith(summonTopic)) {
     if (ref13Number == 0) {
       // topic did not end with number, blink all devices
       for (int j = 0; j < ELEMENTCOUNT(ledPins); j++) {
-        changeWarningStatus(j, stMessage.startsWith("on"));
+        changeSummonStatus(j, stMessage.startsWith("on"));
       }
     } else {
-      changeWarningStatus(ref13Number - 1, stMessage.startsWith("on"));
+      changeSummonStatus(ref13Number - 1, stMessage.startsWith("on"));
     }
   } else if (stTopic.startsWith(ledTopic)) {
     if (ref13Number == 0) {
       // topic did not end with number, blink all devices
       for (int j = 0; j < ELEMENTCOUNT(ledPins); j++) {
-        changeWarningStatus(j, stMessage.startsWith("on"));
+        changeSummonStatus(j, stMessage.startsWith("on"));
       }
     } else {
-      changeWarningStatus(ref13Number - 1, stMessage.startsWith("on"));
+      changeSummonStatus(ref13Number - 1, stMessage.startsWith("on"));
     }
   }
 }
 
-void changeWarningStatus(int ref02Number, boolean warn) {
-  Serial.print("beeping ");  Serial.println(ref02Number+1);
+void changeReminderStatus(int ref02Number, boolean warn) {
+  Serial.print("reminder "); Serial.print(warn); Serial.print(" "); Serial.println(ref02Number+1);
   if (warn) {
     digitalWrite(ledPins[ref02Number], HIGH);
     beepingIterations[ref02Number] = nbBeeps * 2;
     ledStartedMillis[ref02Number] = millis();
     ledDuration[ref02Number] = cfgLedDuration;
+    beepNote = cfgBeepNote;
+    beepOctave = cfgBeepOctave;
+    silenceMilliseconds = cfgSilenceMilliseconds;
+    beepMilliseconds = cfgBeepMilliseconds;
+  } else {
+    digitalWrite(ledPins[ref02Number], LOW);
+    beepingIterations[ref02Number] = 0;
+    tones[ref02Number].stopPlaying();
+  }
+}
+
+void changeSummonStatus(int ref02Number, boolean warn) {
+  Serial.print("summon ");  Serial.print(warn); Serial.print(" "); Serial.println(ref02Number+1);
+  if (warn) {
+    digitalWrite(ledPins[ref02Number], HIGH);
+    beepingIterations[ref02Number] = nbSummonBeeps * 2;
+    ledStartedMillis[ref02Number] = millis();
+    ledDuration[ref02Number] = cfgSummonLedDuration;
+    beepNote = cfgSummonNote;
+    beepOctave = cfgSummonOctave;
+    silenceMilliseconds = cfgSummonSilenceMilliseconds;
+    beepMilliseconds = cfgSummonBeepMilliseconds;
   } else {
     digitalWrite(ledPins[ref02Number], LOW);
     beepingIterations[ref02Number] = 0;
