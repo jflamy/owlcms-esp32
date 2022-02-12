@@ -17,6 +17,28 @@
 const int referee = 0;
 const char* platform = "A";
 
+// pins for refs 1 2 and 3 (1 good, 1 bad, 2 good, etc.)
+int decisionPins[] = {14, 27, 26, 25, 33, 32};
+int ledPins[] = {15, 5, 19};
+int buzzerPins[] = {4, 18, 21};
+
+// number of beeps when referee wakeup is received
+// set to 0 to disable beeps.
+const int nbBeeps = 3;
+const note_t cfgBeepNote = NOTE_F;
+const int cfgBeepOctave = 7; // F7
+const int cfgBeepMilliseconds = 100;
+const int cfgSilenceMilliseconds = 50; // time between beeps
+const int cfgLedDuration = 5000; // led stays for this maximum time;
+
+// referee summon parameters
+const int nbSummonBeeps = 1;
+const note_t cfgSummonNote = NOTE_F;
+const int cfgSummonOctave = 7; // F7
+const int cfgSummonBeepMilliseconds = 3000;
+const int cfgSummonSilenceMilliseconds = 0;
+const int cfgSummonLedDuration = cfgSummonBeepMilliseconds;
+
 // ====== END CONFIG SECTION ======================================================
 
 #ifdef TLS
@@ -30,29 +52,6 @@ const int mqttPort = 1883;
 
 #include "Tone32.hpp"
 #include "PubSubClient.h"
-
-// number of beeps when referee wakeup is received
-// set to 0 to disable beeps.
-const int nbBeeps = 3;
-const note_t cfgBeepNote = NOTE_C;
-const int cfgBeepOctave = 4; // C4
-const int cfgBeepMilliseconds = 100;
-const int cfgSilenceMilliseconds = 50; // time between beeps
-const int cfgLedDuration = 1000; // led stays for this maximum time;
-
-// referee summon parameters
-const int nbSummonBeeps = 1;
-const note_t cfgSummonNote = NOTE_F;
-const int cfgSummonOctave = 5; // F5
-const int cfgSummonBeepMilliseconds = 3000;
-const int cfgSummonSilenceMilliseconds = 0;
-const int cfgSummonLedDuration = cfgSummonBeepMilliseconds;
-
-// pins for refs 1 2 and 3 (1 good, 1 bad, 2 good, etc.)
-int decisionPins[] = {14, 27, 26, 25, 33, 32};
-int ledPins[] = {15, 5, 19};
-int buzzerPins[] = {4, 18, 21};
-
 
 #define ELEMENTCOUNT(x)  (sizeof(x) / sizeof(x[0]))
 
@@ -76,7 +75,7 @@ int ref13Number = 0;
 int prevDecisionPinState[] = {-1, -1, -1, -1, -1, -1};
 
 // for each referee, a Tone generator, and control for a LED
-Tone32 tones[3] = {Tone32(0, 0), Tone32(1, 0), Tone32(2, 0)};
+Tone32 tones[3] = {Tone32(buzzerPins[0], 0), Tone32(buzzerPins[1], 1), Tone32(buzzerPins[2], 2)};
 int beepingIterations[] = {0, 0, 0};
 int ledStartedMillis[] = {0, 0, 0};
 int ledDuration[] = {0, 0, 0};
@@ -184,7 +183,7 @@ void setupPins() {
 
 void setupTones() {
   for (int j = 0; j < ELEMENTCOUNT(tones); j++) {
-    tones[j] = Tone32(j, 0);
+    tones[j] = Tone32(buzzerPins[j], j);
   }
 }
 
