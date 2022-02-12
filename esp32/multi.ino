@@ -29,7 +29,7 @@ const note_t cfgBeepNote = NOTE_F;
 const int cfgBeepOctave = 7; // F7
 const int cfgBeepMilliseconds = 100;
 const int cfgSilenceMilliseconds = 50; // time between beeps
-const int cfgLedDuration = 5000; // led stays for this maximum time;
+const int cfgLedDuration = 20000; // led stays for this maximum time;
 
 // referee summon parameters
 const int nbSummonBeeps = 1;
@@ -92,6 +92,10 @@ void setup() {
   mqttClient.setKeepAlive(20);
   mqttClient.setClient(wifiClient);
   Serial.begin(115200);
+  // wait for serial port to become available
+  while (!Serial.available()) {
+    delay(50);
+  }
   randomSeed(analogRead(0));
 
   wifiConnect();

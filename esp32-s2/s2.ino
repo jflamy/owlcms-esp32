@@ -25,16 +25,16 @@ int buzzerPins[] = {11, 12, 13};
 // number of beeps when referee wakeup is received
 // set to 0 to disable beeps.
 const int nbBeeps = 3;
-const note_t cfgBeepNote = NOTE_C;
-const int cfgBeepOctave = 4; // C4
+const note_t cfgBeepNote = NOTE_F;
+const int cfgBeepOctave = 7; // F7
 const int cfgBeepMilliseconds = 100;
 const int cfgSilenceMilliseconds = 50; // time between beeps
-const int cfgLedDuration = 1000; // led stays for this maximum time;
+const int cfgLedDuration = 20000; // led stays for this maximum time;
 
 // referee summon parameters
 const int nbSummonBeeps = 1;
 const note_t cfgSummonNote = NOTE_F;
-const int cfgSummonOctave = 7; // F5
+const int cfgSummonOctave = 7; // F7
 const int cfgSummonBeepMilliseconds = 3000;
 const int cfgSummonSilenceMilliseconds = 0;
 const int cfgSummonLedDuration = cfgSummonBeepMilliseconds;
@@ -75,7 +75,7 @@ int ref13Number = 0;
 int prevDecisionPinState[] = {-1, -1, -1, -1, -1, -1};
 
 // for each referee, a Tone generator, and control for a LED
-Tone32 tones[3] = {Tone32(0, 0), Tone32(1, 0), Tone32(2, 0)};
+Tone32 tones[3] = {Tone32(buzzerPins[0], 0), Tone32(buzzerPins[1], 1), Tone32(buzzerPins[2], 2)};
 int beepingIterations[] = {0, 0, 0};
 int ledStartedMillis[] = {0, 0, 0};
 int ledDuration[] = {0, 0, 0};
@@ -92,6 +92,7 @@ void setup() {
   mqttClient.setKeepAlive(20);
   mqttClient.setClient(wifiClient);
   Serial.begin(115200);
+  // wait for serial port to become available
   while (!Serial.available()) {
     delay(50);
   }
@@ -107,19 +108,15 @@ void setup() {
   mqttClient.setCallback(callback);
 
   setupPins();
-  pinMode(14, OUTPUT);
   setupTones();
 
   strcpy(fop, platform);
 
-  //mqttReconnect();
+  mqttReconnect();
 }
 
-boolean toggle = true;
 void loop() {
-  delay(5);
-  digitalWrite(14, toggle ? HIGH : LOW);
-  toggle = !toggle;
+  delay(10);
   if (!mqttClient.connected()) {
     mqttReconnect();
   }
@@ -177,7 +174,6 @@ void mqttReconnect() {
 
 void setupPins() {
   for (int j = 0; j < ELEMENTCOUNT(decisionPins); j++) {
-    Serial.println(decisionPins[j]);
     pinMode(decisionPins[j], INPUT_PULLUP);
     prevDecisionPinState[j] = digitalRead(decisionPins[j]);
   }
@@ -191,7 +187,7 @@ void setupPins() {
 
 void setupTones() {
   for (int j = 0; j < ELEMENTCOUNT(tones); j++) {
-    tones[j] = Tone32(j, 0);
+    tones[j] = Tone32(buzzerPins[j], j);
   }
 }
 
