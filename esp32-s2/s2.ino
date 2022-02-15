@@ -19,8 +19,8 @@ const char* platform = "A";
 
 // pins for refs 1 2 and 3 (1 good, 1 bad, 2 good, etc.)
 int decisionPins[] = {4, 3, 6, 5, 8, 7};
-int ledPins[] = {9, 10, 11};
-int buzzerPins[] = {11, 12, 13};
+int buzzerPins[] = {9, 10, 11};
+int ledPins[] = {12, 13, 14};
 
 // number of beeps when referee wakeup is received
 // set to 0 to disable beeps.
