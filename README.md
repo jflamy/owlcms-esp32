@@ -1,7 +1,9 @@
 # owlcms-esp32
 Arduino code for an owlcms WiFi refereeing device.  owlcms is a complete package for running Olympic Weightlifting competitions locally or in the cloud ([owlcms overview and documentation](https://owlcms.github.io/owlcms4/#/index), [owlcms Github](https://github.com/jflamy/owlcms4)).
 
-A weightlifting competition uses three referees and five jury members.  This initial release covers the refereeing devices.  Referees need to give decisions. They also need to be prompted to enter a decision, or summoned by the jury, hence the need for bi-directional communications.
+> Unless you are an arduino programmer yourself, we suggest you use https://owlcms.github.com/owlcms/owlcms-firmata instead.  You are likely to connect the refereeing control box to the athlete-facing laptop anyway.  The owlcms-firmata project provides a program to drive the Arduino using the Firmata protocol, and does not require any programming.
+
+A weightlifting competition uses three referees that give decisions. They need to be prompted when they are late to enter a decision, or summoned by the jury, hence the need for bi-directional communications.
 
 The device uses a low-cost ESP32 device (Arduino-like) which can be bought for about 8$US in small quantities.  The devices and owlcms communicate via an MQTT server. MQTT is a protocol designed for small IoT (Internet of Things) devices.
 
